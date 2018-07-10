@@ -158,14 +158,21 @@ class NYISOClient(BaseClient):
 
             # if fetch_csvs cannot get the individual days, it gets the whole month
             # Shortcut the loop if any call to fetch_csvs gets all dates in dates_list
+            resolution = pieces[-1].index.drop_duplicates()[-1]-pieces[-1].index.drop_duplicates()[-2]
+            print('from {}, to {}, with resolution {}'.format(date,pieces[-1].index[-1],resolution))
+            new_date = (pieces[-1].index.drop_duplicates()[-1] + resolution).date()
+
             try:
-                if (pieces[-1].index[-1].date() - timedelta(days=1)) > max(dates_list):
+                if pieces[-1].index.max().date() > max(dates_list):
                     print('quit cause i finished')
                     break
-                elif  (pieces[-1].index[-1].date() == date):
-                    print('quit cause i ran out of data')
-                    break
-                date = pieces[-1].index[-1].date()
+                elif new_date <= date:
+                    print('missing data... trying the next day')
+                    date = date + timedelta(days=1)
+                #elif new_date > date:
+                #    print('quit cause i ran out of data')
+                else:
+                    date = new_date
             except IndexError:
                 pass
 
